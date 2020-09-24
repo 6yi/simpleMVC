@@ -26,8 +26,8 @@ public class HelloController {
 
     @Router(url = "/hi")
     @ResponseBody
-    public String hi(@PathVariable("key1")String k1, @PathVariable("key2")String k2,HttpServletRequest request, HttpServletResponse response) throws IOException {
-        return "haha";
+    public String hi(@PathVariable("key1")Integer k1, @PathVariable("key2")String k2,HttpServletRequest request) throws IOException {
+        return ""+k1;
     }
 
 

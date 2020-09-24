@@ -1,6 +1,7 @@
 package cn.lzheng.simpleMVC;
 
 
+import cn.lzheng.simpleMVC.MsgHandler.PathVariableMsgHandler;
 import cn.lzheng.simpleMVC.annotation.*;
 import com.alibaba.fastjson.JSON;
 
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -47,13 +49,13 @@ public class RouterServlet extends HttpServlet {
                         BaseController baseController = new BaseController();
                         baseController.setRequestMethod(annotation.method());
                         addParams(baseController,method);
-
-                        baseController.getPathVariable().forEach(System.out::println);
-                        baseController.getFromParams().forEach(System.out::println);
+//                        baseController.getPathVariable().forEach(System.out::println);
+//                        baseController.getFromParams().forEach(System.out::println);
 
                         if(method.getAnnotation(ResponseBody.class)!=null){
                             baseController.setReturnView(false);
                         }
+
                         try{
                             baseController.setObject(clazz.getConstructor().newInstance());
                             baseController.setMethod(method);
@@ -86,7 +88,6 @@ public class RouterServlet extends HttpServlet {
             controller.setPathVariable(pathVariables);
             controller.setFromParams(fromParams);
         }
-
     }
 
     @Override
@@ -97,25 +98,18 @@ public class RouterServlet extends HttpServlet {
         if (baseController!=null){
             if(baseController.getRequestMethod().toUpperCase().equals(request.getMethod())) {
                 try {
-
-
-//                    Map<String, String[]> parameterMap = request.getParameterMap();
-//
-//                    parameterMap.keySet().forEach(System.out::println);
-//                    parameterMap.values().forEach(System.out::println);
-
-
+                    PathVariableMsgHandler pathVariableMsgHandler = new PathVariableMsgHandler();
+                    List<Object> process = pathVariableMsgHandler.process(baseController, request, response);
                     if (baseController.isReturnView()) {
-
                         String view = (String) baseController.getMethod().invoke(baseController.getObject(), request, response);
                         request.getRequestDispatcher(view).forward(request,response);
-                    } else {
 
-                        Object returnValue = baseController.getMethod().invoke(baseController.getObject(), request, response);
+                    } else {
+                        Object returnValue = baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         String s = JSON.toJSONString(returnValue);
                         response.setContentType("text/json; charset=utf-8");
-                        response.getOutputStream().print(s);
-
+                        PrintWriter out = response.getWriter();
+                        out.print(s);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
