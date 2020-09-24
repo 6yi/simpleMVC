@@ -2,16 +2,14 @@ package cn.lzheng.simpleMVC;
 
 
 import cn.lzheng.simpleMVC.MsgHandler.PathVariableMsgHandler;
+import cn.lzheng.simpleMVC.MvcException.ParamsException;
 import cn.lzheng.simpleMVC.annotation.*;
 import com.alibaba.fastjson.JSON;
-
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -34,7 +32,7 @@ public class RouterServlet extends HttpServlet {
 
     private static HashMap<String,BaseController> routerMap;
 
-    private ThreadLocal<HashMap<String,String>> requestParams=new ThreadLocal<>();
+
 
     @Override
     public void init() throws ServletException {
@@ -51,7 +49,6 @@ public class RouterServlet extends HttpServlet {
                         addParams(baseController,method);
 //                        baseController.getPathVariable().forEach(System.out::println);
 //                        baseController.getFromParams().forEach(System.out::println);
-
                         if(method.getAnnotation(ResponseBody.class)!=null){
                             baseController.setReturnView(false);
                         }
@@ -97,29 +94,33 @@ public class RouterServlet extends HttpServlet {
         BaseController baseController = routerMap.get(requestURI);
         if (baseController!=null){
             if(baseController.getRequestMethod().toUpperCase().equals(request.getMethod())) {
-                try {
+                try{
+
+
                     PathVariableMsgHandler pathVariableMsgHandler = new PathVariableMsgHandler();
                     List<Object> process = pathVariableMsgHandler.process(baseController, request, response);
-                    if (baseController.isReturnView()) {
-                        String view = (String) baseController.getMethod().invoke(baseController.getObject(), request, response);
-                        request.getRequestDispatcher(view).forward(request,response);
 
+
+                    if (baseController.isReturnView()) {
+                        String view = (String) baseController.getMethod().invoke(baseController.getObject(), process.toArray());
+                        request.getRequestDispatcher(view).forward(request,response);
                     } else {
-                        Object returnValue = baseController.getMethod().invoke(baseController.getObject(), process.toArray());
-                        String s = JSON.toJSONString(returnValue);
+                        Object returnValue=baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         response.setContentType("text/json; charset=utf-8");
-                        PrintWriter out = response.getWriter();
-                        out.print(s);
+                        response.getWriter().print(JSON.toJSONString(returnValue));
                     }
-                } catch (Exception e) {
+                }catch (ParamsException e){
+                    e.printStackTrace();
+                    response.getOutputStream().print("error_Code:415");
+                }catch (Exception e) {
                     e.printStackTrace();
                     response.getOutputStream().print("error");
                 }
             }else {
-                response.getOutputStream().print("405");
+                response.getOutputStream().print("error_Code:405");
             }
         }else{
-            response.getOutputStream().print("404");
+            response.getOutputStream().print("error_Code:404");
         }
     }
 
