@@ -2,18 +2,18 @@ package cn.lzheng.simpleMVC;
 
 
 import cn.lzheng.simpleMVC.Utils.ConfigurationLoader;
-import cn.lzheng.simpleMVC.Utils.PropertiesLoader;
+
 import cn.lzheng.simpleMVC.annotation.Configuration;
+
+import cn.lzheng.simpleMVC.jsonProcess.JsonProcessHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -27,8 +27,11 @@ import java.util.Set;
 @HandlesTypes(WebInitializer.class)
 public class FrameWorkInit implements ServletContainerInitializer {
 
+    private static Logger logger = LoggerFactory.getLogger(FrameWorkInit.class);
+
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext) throws ServletException {
+        logger.debug("start--------------------------");
         try {
             Class configuration = ConfigurationLoader.getConfiguration();
             Configuration annotationConfig = (Configuration) configuration.getAnnotation(Configuration.class);
@@ -40,8 +43,14 @@ public class FrameWorkInit implements ServletContainerInitializer {
                 throw new Exception(" Controller ScanSrc NotFound");
             }
 
+            //dispatcher init
             ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet(controllerPKG));
             dispatcher.addMapping(annotationConfig.dispatcherUrl());
+
+            //Json init
+            JsonProcessHandlerAdapter.Init();
+
+            //diy init
             if (!set.isEmpty()){
                 for (Class clazz:set){
                     try {

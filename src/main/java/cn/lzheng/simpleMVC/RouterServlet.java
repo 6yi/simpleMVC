@@ -8,7 +8,8 @@ import cn.lzheng.simpleMVC.msgHandler.PathVariableMsgHandler;
 import cn.lzheng.simpleMVC.mvcException.ParamsException;
 import cn.lzheng.simpleMVC.Utils.ClassScanner;
 import cn.lzheng.simpleMVC.annotation.*;
-import com.alibaba.fastjson.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import java.util.*;
  */
 
 public class RouterServlet extends HttpServlet {
+    private static Logger logger = LoggerFactory.getLogger(RouterServlet.class);
 
     private String scanSrc;
 
@@ -47,6 +49,7 @@ public class RouterServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        logger.debug("routerServlet init---------");
         List<Class<?>> classes = ClassScanner.getClasses(this.scanSrc);
         routerMap=new HashMap<>();
         classes.forEach(clazz->{

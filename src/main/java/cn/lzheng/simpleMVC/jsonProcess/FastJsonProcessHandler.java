@@ -2,6 +2,8 @@ package cn.lzheng.simpleMVC.jsonProcess;
 
 import cn.lzheng.simpleMVC.annotation.JsonProcess;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @ClassName FastJsonProcessHandler
@@ -13,10 +15,11 @@ import com.alibaba.fastjson.JSONObject;
 
 public class FastJsonProcessHandler implements JsonProcessHandler {
 
-
+    private static Logger logger = LoggerFactory.getLogger(FastJsonProcessHandler.class);
 
     @Override
     public String toJsonString(Object object) {
+        logger.debug("fastjson---------------");
         return JSONObject.toJSONString(object);
     }
 

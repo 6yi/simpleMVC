@@ -3,6 +3,8 @@ package cn.lzheng.simpleMVC.jsonProcess;
 import cn.lzheng.simpleMVC.Utils.ConfigurationLoader;
 import cn.lzheng.simpleMVC.Utils.PropertiesLoader;
 import cn.lzheng.simpleMVC.annotation.JsonProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,13 +21,14 @@ import java.util.Properties;
 
 public class JsonProcessHandlerAdapter {
 
-
+    private static Logger logger = LoggerFactory.getLogger(JsonProcessHandler.class);
     private static JsonProcessHandler ProcessHandler;
 
     private JsonProcessHandlerAdapter() {
     }
 
-    public static JsonProcessHandler getJsonProcessHandler(){
+    public static void Init(){
+        logger.debug("jsonProcess init--------");
         if (ProcessHandler==null){
             synchronized (JsonProcessHandlerAdapter.class){
                 if(ProcessHandler==null){
@@ -46,6 +49,10 @@ public class JsonProcessHandlerAdapter {
                 }
             }
         }
+    }
+
+
+    public static JsonProcessHandler getJsonProcessHandler(){
         return ProcessHandler;
     }
 
