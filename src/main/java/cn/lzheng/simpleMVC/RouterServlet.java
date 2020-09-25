@@ -1,8 +1,12 @@
 package cn.lzheng.simpleMVC;
 
 
-import cn.lzheng.simpleMVC.MsgHandler.PathVariableMsgHandler;
-import cn.lzheng.simpleMVC.MvcException.ParamsException;
+import cn.lzheng.simpleMVC.jsonProcess.JsonProcessHandlerAdapter;
+import cn.lzheng.simpleMVC.msgHandler.BaseMsgHandler;
+import cn.lzheng.simpleMVC.msgHandler.JsonMsgHandler;
+import cn.lzheng.simpleMVC.msgHandler.PathVariableMsgHandler;
+import cn.lzheng.simpleMVC.mvcException.ParamsException;
+import cn.lzheng.simpleMVC.Utils.ClassScanner;
 import cn.lzheng.simpleMVC.annotation.*;
 import com.alibaba.fastjson.JSON;
 import javax.servlet.ServletException;
@@ -11,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
@@ -30,9 +33,17 @@ public class RouterServlet extends HttpServlet {
         this.scanSrc = scanSrc;
     }
 
+    private  static PathVariableMsgHandler pathVariableMsgHandler;
+
+    private static JsonMsgHandler jsonMsgHandler;
+
+    static {
+        pathVariableMsgHandler=new PathVariableMsgHandler();
+        jsonMsgHandler=new JsonMsgHandler();
+    }
+
+
     private static HashMap<String,BaseController> routerMap;
-
-
 
     @Override
     public void init() throws ServletException {
@@ -46,13 +57,10 @@ public class RouterServlet extends HttpServlet {
                     if (annotation!=null){
                         BaseController baseController = new BaseController();
                         baseController.setRequestMethod(annotation.method());
-                        addParams(baseController,method);
-//                        baseController.getPathVariable().forEach(System.out::println);
-//                        baseController.getFromParams().forEach(System.out::println);
+//                        addParams(baseController,method);
                         if(method.getAnnotation(ResponseBody.class)!=null){
                             baseController.setReturnView(false);
                         }
-
                         try{
                             baseController.setObject(clazz.getConstructor().newInstance());
                             baseController.setMethod(method);
@@ -67,25 +75,40 @@ public class RouterServlet extends HttpServlet {
     }
 
 
-    public void addParams(BaseController controller,Method method){
-        Parameter[] parameters = method.getParameters();
-        if(parameters!=null){
-            ArrayList<String> pathVariables = new ArrayList<>();
-            ArrayList<String> fromParams = new ArrayList<>();
-            for (int i = 0; i < parameters.length; i++) {
-                PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
-                FromParams fromParam = parameters[i].getAnnotation(FromParams.class);
-                if(pathVariable!=null){
-                    pathVariables.add(pathVariable.value());
-                }
-                if(fromParam!=null){
-                    fromParams.add(fromParam.value());
-                }
-            }
-            controller.setPathVariable(pathVariables);
-            controller.setFromParams(fromParams);
+//    public void addParams(BaseController controller,Method method){
+//        Parameter[] parameters = method.getParameters();
+//        if(parameters!=null){
+//            ArrayList<String> pathVariables = new ArrayList<>();
+//            ArrayList<String> fromParams = new ArrayList<>();
+//            for (int i = 0; i < parameters.length; i++) {
+//                PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
+//                FromParams fromParam = parameters[i].getAnnotation(FromParams.class);
+//                if(pathVariable!=null){
+//                    pathVariables.add(pathVariable.value());
+//                }
+//                if(fromParam!=null){
+//                    fromParams.add(fromParam.value());
+//                }
+//            }
+//            controller.setPathVariable(pathVariables);
+//            controller.setFromParams(fromParams);
+//        }
+//    }
+
+
+    public BaseMsgHandler selectMsgHandler(HttpServletRequest request){
+        String contentType = request.getContentType();
+        if(contentType==null){
+            return pathVariableMsgHandler;
+        }else if(contentType.equals("application/x-www-form-urlencoded")){
+            return pathVariableMsgHandler;
+        }else if(contentType.equals("application/json")){
+            return jsonMsgHandler;
+        }else{
+            return pathVariableMsgHandler;
         }
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -96,10 +119,9 @@ public class RouterServlet extends HttpServlet {
             if(baseController.getRequestMethod().toUpperCase().equals(request.getMethod())) {
                 try{
 
+                    BaseMsgHandler MsgHandler = selectMsgHandler(request);
 
-                    PathVariableMsgHandler pathVariableMsgHandler = new PathVariableMsgHandler();
-                    List<Object> process = pathVariableMsgHandler.process(baseController, request, response);
-
+                    List<Object> process = MsgHandler.process(baseController, request, response);
 
                     if (baseController.isReturnView()) {
                         String view = (String) baseController.getMethod().invoke(baseController.getObject(), process.toArray());
@@ -107,7 +129,7 @@ public class RouterServlet extends HttpServlet {
                     } else {
                         Object returnValue=baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         response.setContentType("text/json; charset=utf-8");
-                        response.getWriter().print(JSON.toJSONString(returnValue));
+                        response.getWriter().print(JsonProcessHandlerAdapter.getJsonProcessHandler().toJsonString(returnValue));
                     }
                 }catch (ParamsException e){
                     e.printStackTrace();

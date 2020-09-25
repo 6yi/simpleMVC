@@ -1,12 +1,17 @@
 package cn.lzheng.simpleMVC;
 
 
+import cn.lzheng.simpleMVC.Utils.ConfigurationLoader;
+import cn.lzheng.simpleMVC.Utils.PropertiesLoader;
+import cn.lzheng.simpleMVC.annotation.Configuration;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -25,13 +30,18 @@ public class FrameWorkInit implements ServletContainerInitializer {
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext) throws ServletException {
         try {
-            Properties properties = loadProperties();
-            String controllerPKG = properties.getProperty("controllerPKG");
+            Class configuration = ConfigurationLoader.getConfiguration();
+            Configuration annotationConfig = (Configuration) configuration.getAnnotation(Configuration.class);
+
+            String controllerPKG = annotationConfig.controllerSrc();
+
+
             if(controllerPKG==null){
                 throw new Exception(" Controller ScanSrc NotFound");
             }
+
             ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet(controllerPKG));
-            dispatcher.addMapping("/");
+            dispatcher.addMapping(annotationConfig.dispatcherUrl());
             if (!set.isEmpty()){
                 for (Class clazz:set){
                     try {
@@ -48,31 +58,6 @@ public class FrameWorkInit implements ServletContainerInitializer {
         }
     }
 
-    public Properties loadProperties() {
-        InputStream in=null;
-        Properties properties=null;
-        try {
 
-            in = new BufferedInputStream(
-                    Objects.requireNonNull(FrameWorkInit.class
-                            .getClassLoader()
-                            .getResourceAsStream("application.properties")));
-
-            properties= new Properties();
-            properties.load(in);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if(in!=null){
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return properties;
-    }
 
 }
