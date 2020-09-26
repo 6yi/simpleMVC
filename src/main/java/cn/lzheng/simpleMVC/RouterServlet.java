@@ -63,7 +63,6 @@ public class RouterServlet extends HttpServlet {
                     if (annotation!=null){
                         BaseController baseController = new BaseController();
                         baseController.setRequestMethod(annotation.method());
-//                        addParams(baseController,method);
                         if(method.getAnnotation(ResponseBody.class)!=null){
                             baseController.setReturnView(false);
                         }
@@ -118,22 +117,17 @@ public class RouterServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
         String requestURI = request.getRequestURI();
-
-        if(requestURI.contains(".html")){
-            logger.debug("url:-------"+requestURI);
-            request.setAttribute("url",requestURI);
-            request.getRequestDispatcher("/static"+requestURI).forward(request,response);
-            return;
-        }
         BaseController baseController = routerMap.get(requestURI);
+
         if (baseController!=null){
             if(baseController.getRequestMethod().toUpperCase().equals(request.getMethod())) {
                 try{
-
                     //获取消息处理器
                     BaseMsgHandler MsgHandler = selectMsgHandler(request);
+
                     //获取参数
                     List<Object> process = MsgHandler.process(baseController, request, response);
 
@@ -146,8 +140,8 @@ public class RouterServlet extends HttpServlet {
                         Object returnValue=baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         response.setContentType("text/json; charset=utf-8");
                         response.getWriter().print(JsonProcessHandlerAdapter.getJsonProcessHandler().toJsonString(returnValue));
-
                     }
+
                 }catch (ParamsException e){
                     e.printStackTrace();
                     response.getOutputStream().print("error_Code:415");
@@ -159,7 +153,8 @@ public class RouterServlet extends HttpServlet {
                 response.getOutputStream().print("error_Code:405");
             }
         }else{
-            response.getOutputStream().print("error_Code:404");
+                request.setAttribute("url",requestURI);
+                request.getRequestDispatcher("/simpleMvcStatic"+requestURI).forward(request,response);
         }
     }
 

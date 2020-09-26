@@ -42,12 +42,14 @@ public class FrameWorkInit implements ServletContainerInitializer {
                 throw new Exception(" Controller ScanSrc NotFound");
             }
 
+            //staticServlet init
+            ServletRegistration.Dynamic staticServlet = servletContext.addServlet("staticServlet", new simpleMvcStaticServlet());
+            staticServlet.addMapping("/simpleMvcStatic/*");
+
             //dispatcher init
             ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet(controllerPKG));
             dispatcher.addMapping(annotationConfig.dispatcherUrl());
 
-            ServletRegistration.Dynamic staticServlet = servletContext.addServlet("staticServlet", new simpleMvcStaticServlet());
-            staticServlet.addMapping("/static/*");
 
             //Json init
             JsonProcessHandlerAdapter.Init();
