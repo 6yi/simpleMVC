@@ -1,8 +1,8 @@
 package cn.lzheng.simpleMVC;
 
-
 import cn.lzheng.simpleMVC.jsonProcess.JsonProcessHandlerAdapter;
 import cn.lzheng.simpleMVC.msgHandler.BaseMsgHandler;
+import cn.lzheng.simpleMVC.msgHandler.FromParamsMsgHandler;
 import cn.lzheng.simpleMVC.msgHandler.JsonMsgHandler;
 import cn.lzheng.simpleMVC.msgHandler.PathVariableMsgHandler;
 import cn.lzheng.simpleMVC.mvcException.ParamsException;
@@ -39,9 +39,12 @@ public class RouterServlet extends HttpServlet {
 
     private static JsonMsgHandler jsonMsgHandler;
 
+    private static FromParamsMsgHandler fromParamsMsgHandler;
+
     static {
         pathVariableMsgHandler=new PathVariableMsgHandler();
         jsonMsgHandler=new JsonMsgHandler();
+        fromParamsMsgHandler=new FromParamsMsgHandler();
     }
 
 
@@ -104,7 +107,7 @@ public class RouterServlet extends HttpServlet {
         if(contentType==null){
             return pathVariableMsgHandler;
         }else if(contentType.equals("application/x-www-form-urlencoded")){
-            return pathVariableMsgHandler;
+            return fromParamsMsgHandler;
         }else if(contentType.equals("application/json")){
             return jsonMsgHandler;
         }else{
@@ -117,22 +120,33 @@ public class RouterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String requestURI = request.getRequestURI();
+
+        if(requestURI.contains(".html")){
+            logger.debug("url:-------"+requestURI);
+            request.setAttribute("url",requestURI);
+            request.getRequestDispatcher("/static"+requestURI).forward(request,response);
+            return;
+        }
         BaseController baseController = routerMap.get(requestURI);
         if (baseController!=null){
             if(baseController.getRequestMethod().toUpperCase().equals(request.getMethod())) {
                 try{
 
+                    //获取消息处理器
                     BaseMsgHandler MsgHandler = selectMsgHandler(request);
-
+                    //获取参数
                     List<Object> process = MsgHandler.process(baseController, request, response);
 
+                    //是否需要返回视图
                     if (baseController.isReturnView()) {
                         String view = (String) baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         request.getRequestDispatcher(view).forward(request,response);
                     } else {
+                        //否则返回json
                         Object returnValue=baseController.getMethod().invoke(baseController.getObject(), process.toArray());
                         response.setContentType("text/json; charset=utf-8");
                         response.getWriter().print(JsonProcessHandlerAdapter.getJsonProcessHandler().toJsonString(returnValue));
+
                     }
                 }catch (ParamsException e){
                     e.printStackTrace();

@@ -13,19 +13,18 @@ import org.slf4j.LoggerFactory;
  * @Description:
  */
 
-public class FastJsonProcessHandler implements JsonProcessHandler {
+public class FastJsonProcessHandler<T> implements JsonProcessHandler {
 
     private static Logger logger = LoggerFactory.getLogger(FastJsonProcessHandler.class);
 
     @Override
     public String toJsonString(Object object) {
-        logger.debug("fastjson---------------");
         return JSONObject.toJSONString(object);
     }
 
     @Override
-    public Object toJavaObject(String json,Object object) {
-        return  JSONObject.parseObject(json,object.getClass());
+    public T toJavaObject(String json,Class clazz) {
+        return  (T)JSONObject.parseObject(json,clazz);
     }
 
 }

@@ -8,10 +8,10 @@ package cn.lzheng.simpleMVC.jsonProcess;
  * @Description:
  */
 
-public interface JsonProcessHandler {
+public interface JsonProcessHandler<T> {
 
     String toJsonString(Object object);
 
-    Object toJavaObject(String json,Object object);
+    Object toJavaObject(String json,Class clazz);
 
 }

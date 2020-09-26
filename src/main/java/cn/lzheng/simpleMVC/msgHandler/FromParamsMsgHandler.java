@@ -1,9 +1,8 @@
 package cn.lzheng.simpleMVC.msgHandler;
 
 import cn.lzheng.simpleMVC.BaseController;
+import cn.lzheng.simpleMVC.annotation.FromParams;
 import cn.lzheng.simpleMVC.mvcException.ParamsException;
-import cn.lzheng.simpleMVC.annotation.PathVariable;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -11,44 +10,40 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 /**
- * @ClassName PathVariableMesgHandler
+ * @ClassName FromParamsMsgHandler
  * @Author 刘正
- * @Date 2020/9/24 18:43
+ * @Date 2020/9/25 21:46
  * @Version 1.0
  * @Description:
  */
 
 
-public class PathVariableMsgHandler implements BaseMsgHandler{
-
+public class FromParamsMsgHandler implements BaseMsgHandler {
 
     @Override
-    public List<Object> process(BaseController baseController, HttpServletRequest request, HttpServletResponse response) throws ParamsException {
-        try {
+    public List process(BaseController baseController, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        try{
             Method method = baseController.getMethod();
-
-            Map<String, String[]> parameterMap = request.getParameterMap();
-
-
             Parameter[] parameters = method.getParameters();
 
             ArrayList<Object> args = new ArrayList<>();
 
             for (Parameter parameter : parameters) {
-                PathVariable annotation = parameter.getAnnotation(PathVariable.class);
+                FromParams annotation = parameter.getAnnotation(FromParams.class);
                 if(annotation!=null){
-                    if (parameterMap.containsKey(annotation.value())){
-                            Type type = parameter.getType();
-                            if(type.getTypeName().equals(Integer.class.getTypeName())){
-                                args.add(Integer.parseInt(parameterMap.get(annotation.value())[0]));
-                            }else if(type.getTypeName().equals(Double.class.getTypeName())){
-                                args.add(Double.parseDouble(parameterMap.get(annotation.value())[0]));
-                            }else{
-                                args.add(parameterMap.get(annotation.value())[0]);
-                            }
+                    String var1=request.getParameter(annotation.value());
+                    if (var1!=null){
+                        Type type = parameter.getType();
+                        if(type.getTypeName().equals(Integer.class.getTypeName())){
+                            args.add(Integer.parseInt(var1));
+                        }else if(type.getTypeName().equals(Double.class.getTypeName())){
+                            args.add(Double.parseDouble(var1));
+                        }else{
+                            args.add(var1);
+                        }
                     }
                 }else{
                     Type type = parameter.getType();
@@ -66,8 +61,5 @@ public class PathVariableMsgHandler implements BaseMsgHandler{
             throw new ParamsException();
         }
     }
-
-
-
 
 }

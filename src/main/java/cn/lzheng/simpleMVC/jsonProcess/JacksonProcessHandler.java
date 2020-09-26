@@ -16,13 +16,12 @@ import java.io.IOException;
  */
 
 
-public class JacksonProcessHandler implements JsonProcessHandler {
+public class JacksonProcessHandler<T> implements JsonProcessHandler {
 
     private static Logger logger = LoggerFactory.getLogger(JacksonProcessHandler.class);
 
     @Override
     public String toJsonString(Object object) {
-        logger.debug("jackson----------");
         ObjectMapper objectMapper = new ObjectMapper();
         String s=null;
         try {
@@ -33,11 +32,15 @@ public class JacksonProcessHandler implements JsonProcessHandler {
         return s;
     }
 
+
+
     @Override
-    public Object toJavaObject(String json, Object object) {
+    public T toJavaObject(String json, Class clazz) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(json,object.getClass());
+            T o = (T) mapper.readValue(json, clazz);
+            logger.debug("object---"+o);
+            return o;
         } catch (IOException e) {
             e.printStackTrace();
         }
