@@ -9,7 +9,7 @@
 
 
 
-### 基本使用
+### QuickStart
 
 #### 添加配置文件application.properties,指定配置类
 
@@ -51,7 +51,7 @@ public class HelloController {
 
     @Router(url = "/hi")
     @ResponseBody
-    public String hi(@PathVariable("key1")Integer k1, @PathVariable("key2")String k2,HttpServletRequest request) throws IOException {
+    public String hi(@PathVariable("key1")Integer k1, @JsonVar account k2,HttpServletRequest request) throws IOException {
         return ""+k1;
     }
 }
@@ -61,6 +61,6 @@ public class HelloController {
 @Router是处理方法,参数url表示请求路径,method表示请求方法,默认为get  
 @ResponseBody表示解析成json字符串返回  
 @PathVariable是路径参数,参数为参数名  
-
+@JsonVar 接收json数据转成java对象
 
 
