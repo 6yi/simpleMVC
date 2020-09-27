@@ -18,7 +18,8 @@ MyConfiguration.java
 .sts4-cache
 *.properties
 *.html
-/webapp
+webapp/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
