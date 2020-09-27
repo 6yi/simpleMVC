@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
  * @Author 刘正
  * @Date 2020/9/26 13:11
  * @Version 1.0
- * @Description:
+ * @Description: 静态文件servlet
  */
 
 public class simpleMvcStaticServlet extends DefaultServlet {

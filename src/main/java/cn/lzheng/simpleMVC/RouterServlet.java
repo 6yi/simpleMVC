@@ -24,15 +24,22 @@ import java.util.*;
  * @Date 2020/9/14 17:59
  * @Version 1.0
  * @Description:
+ *
+ *  Dispatcher,所有的请求先到这里,然后匹配消息处理器,
+ *
  */
 
 public class RouterServlet extends HttpServlet {
     private static Logger logger = LoggerFactory.getLogger(RouterServlet.class);
 
     private String scanSrc;
+    private String staticPath;
+    private String suffix;
 
-    public RouterServlet(String scanSrc) {
-        this.scanSrc = scanSrc;
+    public RouterServlet(Configuration annotationConfig) {
+        this.scanSrc = annotationConfig.controllerSrc();
+        this.staticPath = annotationConfig.controllerSrc();
+        this.suffix = "/index"+annotationConfig.suffix();
     }
 
     private  static PathVariableMsgHandler pathVariableMsgHandler;
@@ -40,6 +47,8 @@ public class RouterServlet extends HttpServlet {
     private static JsonMsgHandler jsonMsgHandler;
 
     private static FromParamsMsgHandler fromParamsMsgHandler;
+
+
 
     static {
         pathVariableMsgHandler=new PathVariableMsgHandler();
@@ -50,6 +59,12 @@ public class RouterServlet extends HttpServlet {
 
     private static HashMap<String,BaseController> routerMap;
 
+    /**
+     * @author 6yi
+     * @date 2020/9/26
+     * @return
+     * @Description 初始化,扫描controller下的包
+     **/
     @Override
     public void init() throws ServletException {
         logger.debug("routerServlet init---------");
@@ -101,6 +116,12 @@ public class RouterServlet extends HttpServlet {
 //    }
 
 
+    /**
+     * @author 6yi
+     * @date 2020/9/26
+     * @return
+     * @Description 消息处理器选择器,根据conten-type进行匹配
+     **/
     public BaseMsgHandler selectMsgHandler(HttpServletRequest request){
         String contentType = request.getContentType();
         if(contentType==null){
@@ -153,8 +174,15 @@ public class RouterServlet extends HttpServlet {
                 response.getOutputStream().print("error_Code:405");
             }
         }else{
-                request.setAttribute("url",requestURI);
+                if (requestURI.equals("/")&&this.suffix.equals("/index.jsp")){
+                        request.getRequestDispatcher("/index.jsp").forward(request,response);
+                        return;
+                    }else{
+                        requestURI=this.suffix;
+                }
+                request.setAttribute("url",staticPath+requestURI);
                 request.getRequestDispatcher("/simpleMvcStatic"+requestURI).forward(request,response);
+
         }
     }
 

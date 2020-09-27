@@ -13,4 +13,8 @@ public @interface Configuration {
 
     String dispatcherUrl() default "/";
 
+    String staticPath() default "";
+
+    String suffix() default ".jsp";
+
 }

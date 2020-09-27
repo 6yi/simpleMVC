@@ -2,19 +2,17 @@ package cn.lzheng.simpleMVC;
 
 
 import cn.lzheng.simpleMVC.Utils.ConfigurationLoader;
-
 import cn.lzheng.simpleMVC.annotation.Configuration;
-
 import cn.lzheng.simpleMVC.jsonProcess.JsonProcessHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import java.util.Set;
+
 
 /**
  * @ClassName FrameWorkInit
@@ -35,9 +33,7 @@ public class FrameWorkInit implements ServletContainerInitializer {
         try {
             Class configuration = ConfigurationLoader.getConfiguration();
             Configuration annotationConfig = (Configuration) configuration.getAnnotation(Configuration.class);
-
             String controllerPKG = annotationConfig.controllerSrc();
-
             if(controllerPKG==null){
                 throw new Exception(" Controller ScanSrc NotFound");
             }
@@ -47,7 +43,7 @@ public class FrameWorkInit implements ServletContainerInitializer {
             staticServlet.addMapping("/simpleMvcStatic/*");
 
             //dispatcher init
-            ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet(controllerPKG));
+            ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet( annotationConfig));
             dispatcher.addMapping(annotationConfig.dispatcherUrl());
 
 

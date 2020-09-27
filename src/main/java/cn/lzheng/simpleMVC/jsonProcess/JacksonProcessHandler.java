@@ -39,7 +39,6 @@ public class JacksonProcessHandler<T> implements JsonProcessHandler {
         ObjectMapper mapper = new ObjectMapper();
         try {
             T o = (T) mapper.readValue(json, clazz);
-            logger.debug("object---"+o);
             return o;
         } catch (IOException e) {
             e.printStackTrace();
