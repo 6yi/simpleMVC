@@ -51,8 +51,14 @@ public class HelloController {
 
     @Router(url = "/hi")
     @ResponseBody
-    public String hi(@PathVariable("key1")Integer k1, @JsonVar account k2,HttpServletRequest request) throws IOException {
+    public String hi(@PathVariable("key1")Integer k1,HttpServletRequest request) throws IOException {
         return ""+k1;
+    }
+
+    @Router(url = "/hello")
+    @ResponseBody
+    public account hi(@JsonVar account k1,HttpServletRequest request) throws IOException {
+        return k1;
     }
 }
 
