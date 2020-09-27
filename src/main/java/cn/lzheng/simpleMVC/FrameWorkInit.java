@@ -1,6 +1,7 @@
 package cn.lzheng.simpleMVC;
 
 
+import cn.lzheng.simpleMVC.Utils.ClassScanner;
 import cn.lzheng.simpleMVC.Utils.ConfigurationLoader;
 import cn.lzheng.simpleMVC.annotation.Configuration;
 import cn.lzheng.simpleMVC.jsonProcess.JsonProcessHandlerAdapter;
@@ -11,6 +12,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 
@@ -27,28 +31,13 @@ public class FrameWorkInit implements ServletContainerInitializer {
 
     private static Logger logger = LoggerFactory.getLogger(FrameWorkInit.class);
 
+
+
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext) throws ServletException {
         logger.debug("start--------------------------");
+        List<Class<?>> beans=new LinkedList<>();
         try {
-            Class configuration = ConfigurationLoader.getConfiguration();
-            Configuration annotationConfig = (Configuration) configuration.getAnnotation(Configuration.class);
-            String controllerPKG = annotationConfig.controllerSrc();
-            if(controllerPKG==null){
-                throw new Exception(" Controller ScanSrc NotFound");
-            }
-
-            //staticServlet init
-            ServletRegistration.Dynamic staticServlet = servletContext.addServlet("staticServlet", new simpleMvcStaticServlet());
-            staticServlet.addMapping("/simpleMvcStatic/*");
-
-            //dispatcher init
-            ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet( annotationConfig));
-            dispatcher.addMapping(annotationConfig.dispatcherUrl());
-
-
-            //Json init
-            JsonProcessHandlerAdapter.Init();
 
             //diy init
             if (set!=null&&!set.isEmpty()){
@@ -61,6 +50,32 @@ public class FrameWorkInit implements ServletContainerInitializer {
                     }
                 }
             }
+
+
+
+            Class configuration = ConfigurationLoader.getConfiguration();
+            Configuration annotationConfig = (Configuration) configuration.getAnnotation(Configuration.class);
+            String controllerPKG = annotationConfig.controllerSrc();
+
+            beans=ClassScanner.getClasses(controllerPKG);
+
+            if(controllerPKG==null){
+                throw new Exception(" Controller ScanSrc NotFound");
+            }
+
+            //staticServlet init
+            ServletRegistration.Dynamic staticServlet = servletContext.addServlet("staticServlet", new simpleMvcStaticServlet());
+            staticServlet.addMapping("/simpleMvcStatic/*");
+
+            //dispatcher init
+            ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new RouterServlet( annotationConfig,beans));
+            dispatcher.addMapping(annotationConfig.dispatcherUrl());
+
+
+            //Json init
+            JsonProcessHandlerAdapter.Init();
+
+
         }  catch (Exception e) {
             e.printStackTrace();
             System.exit(0);

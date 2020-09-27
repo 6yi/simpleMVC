@@ -6,7 +6,7 @@
 
   <groupId>cn.lzheng</groupId>
   <artifactId>simpleMVC</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>simpleMVC Maven Webapp</name>
@@ -20,6 +20,9 @@
   </properties>
 
   <dependencies>
+
+
+
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-catalina</artifactId>

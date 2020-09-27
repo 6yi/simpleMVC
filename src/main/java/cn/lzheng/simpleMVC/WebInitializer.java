@@ -1,6 +1,7 @@
 package cn.lzheng.simpleMVC;
 
 import javax.servlet.ServletContext;
+import java.util.List;
 
 /**
  * @ClassName WebInitializer
@@ -11,5 +12,9 @@ import javax.servlet.ServletContext;
  */
 
 public interface WebInitializer {
+
     void onStartup(ServletContext servletContext);
+
+
+
 }
