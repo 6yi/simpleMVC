@@ -1,7 +1,7 @@
 # SimpleMVC
 
 ### 介绍
-一个简易的Java MVC框架
+一个简易的Java MVC框架,此版本不提供与spring的整合,需要整合请移步simpleMVC-Spring
 
 
 #### 启动流程
