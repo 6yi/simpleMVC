@@ -31,7 +31,7 @@ public class simpleMvcStaticServlet extends DefaultServlet {
     protected void serveResource(HttpServletRequest request, HttpServletResponse response, boolean content) throws IOException, ServletException {
         boolean serveContent = content;
         // Identify the requested resource path
-        String path = (String) request.getAttribute("url");
+        String path = (String) request.getAttribute("   url");
         if (debug > 0) {
             if (serveContent)
                 log("DefaultServlet.serveResource:  Serving resource '" +
